@@ -1,15 +1,15 @@
 import pandas as pd
 import numpy as np
-from planilhas import Planilha
+from leituras import Leitura
 
-planilhas = Planilha() 
-tab421 = planilhas.tabela(sheet_name = "4.21")
+leitura = Leitura() 
+tab421 = leitura.tabela(sheet_name = "4.21")
 tab421 = tab421.replace({'Cabo isolado em XLPE':'XLPE', 'Cabo isolado em EPR':'EPR'})
-tab42 = planilhas.tabela(sheet_name = "4.2")
-tab46 = planilhas.tabela(sheet_name = "4.6")
-tab47 = planilhas.tabela(sheet_name = "4.7")
-tab48 = planilhas.tabela(sheet_name = "4.8")
-
+tab42 = leitura.tabela(sheet_name = "4.2")
+tab46 = leitura.tabela(sheet_name = "4.6")
+tab47 = leitura.tabela(sheet_name = "4.7")
+tab48 = leitura.tabela(sheet_name = "4.8")
+tab49 = leitura.tabela(sheet_name = "4.9")
 
 class Condutor():
     """Parâmetros: 
@@ -214,9 +214,19 @@ class Condutor():
 
         return Xp
 
-    def reatancia_blindagem1(self, Dmg, Dmb):
+    def reatancia_blindagem(self):
         """ ---- Função que calcula a reatância da blindagem para um ponto de aterramento ----
         Primeiro argumento é a distância média geométrica; Segundo argumento é o diâmetro médio da blindagem"""
+
+        Dca = self.diametro_externo()
+        D = Dca  # teste
+        Dmg = self.calcular_Dmg(D)
+        Dc = 2 * self.raio_condutor()
+        Ei = self.espessura_camada_isolante()
+        Ebi = 1 #teste
+        Ebe = 1 #teste
+        Ebm = 1 #teste
+        Dmb = self.diametro_medio_bindagem(Dc, Ei, Ebi, Ebe, Ebm)
 
         Xb = 0.0754 * np.log((2 * Dmg) / (Dmb))
 
@@ -230,12 +240,17 @@ class Condutor():
 
         return delta_Rb
 
-    def resistencia_blindagem(self, coeficiente_temp, resistividade, Sb, Tb, K4):
+    def resistencia_blindagem(self):
         """ ---- Função que calcula a resistência da blindagem ----
             Primeiro argumento é o coeficiente de temperatura; Segundo argumento é a resistividade
-            Terceiro argumento é a área da seção traversal; Quarto argumento é a temperatura da blindagem;
+            Terceiro argumento é a área da seção transversal; Quarto argumento é a temperatura da blindagem;
             Último argumento é a constante K4"""
 
+        K4 = self.fator_K('K4', 'Fio ou encordoamento compacto', self.fator_diametro)
+        resistividade = self.resistividade_condutor()
+        coeficiente_temp = self.coeficiente_temperatura()
+        Sb = 300#self.secao_blindagem(diametro_fio, intensidade_corrente)
+        Tb = 90 #teste
         Rb = (1 + coeficiente_temp * (Tb - 20)) * (1000 * K4 * resistividade) / Sb
 
         return Rb
@@ -265,13 +280,16 @@ class Condutor():
 
         return delta_Xb
 
-    def reatancia_blindagem2(self, Dmg, Dmb):
-        """ ---- Função que calcula a reatância da blindagem para varios pontos de aterramento ----
-            Primeiro argumento é a distância média geométrica; Segundo argumento é a diâmetro médio da blindagem"""
+    def acrescimos_resistencia_reatancia_positiva(self):
 
-        Xb = 0.0754 * np.log((2 * Dmg) / (Dmb))
+        Xb = self.reatancia_blindagem()
+        Rb = self.resistencia_blindagem()
 
-        return Xb
+        delta_Rb = self.acrescimo_componente_resistivo(Rb, Xb)
+        delta_Xb = self.reducao_reatancia_positiva(Rb, Xb)
+
+        return delta_Rb, delta_Xb
+
 
     def diametro_medio_bindagem(self, Dc, Ei, Ebi, Ebe, Ebm):
         """ ---- Função que calcula o diâmetro médio da blindagem  ----
@@ -283,10 +301,10 @@ class Condutor():
 
         return Dmb
 
-    def resistencia_positiva(self, Dmg, Dc, fator_diametro):
+    def resistencia_positiva(self, Dmg, Dc):
         """ ---- Função que calcula a resistência positiva ----"""
         
-        K1 = self.fator_K('K1', 'Fio ou encordoamento compacto', fator_diametro)
+        K1 = self.fator_K('K1', 'Fio ou encordoamento compacto', self.fator_diametro)
         K2 = self.fator_K('K2', 'Fio ou encordoamento compacto', 0)
         K3 = self.fator_K('K3', 'Cabos singelos', 0)
         p20 = self.resistividade_condutor()
@@ -318,7 +336,7 @@ class Condutor():
 
         return Rf
 
-    def impedancia_positiva_um_ponto(self, fator_diametro):
+    def impedancia_positiva_aterrada_um_ponto(self):
         """ ---- Função que calcula a impedância positiva para apenas um ponto de aterramento, "(m Ohms) / m" ----
 
         Return:     Um float complexo"""
@@ -327,16 +345,90 @@ class Condutor():
         Dca = self.diametro_externo()
         D = Dca  # teste
         Dmg = self.calcular_Dmg(D)
-        Rp = self.resistencia_positiva(Dmg, Dc, fator_diametro)
+        Rp = self.resistencia_positiva(Dmg, Dc)
         Xp = self. reatancia_positiva(Dmg, Dc)
         Zp = np.complex(Rp, Xp)
 
         return Zp
 
-    def impedancia_positiva_aterrada_pontos(self, Rpf, Xpf):
+    def impedancia_positiva_aterrada_pontos(self):
         """ ---- Função que calcula a impedância positiva para vários pontos de aterramento ----
             Primeiro argumento é a resistência efetiva positiva; Segundo argumento é a reatância efetiva positiva"""
 
+        Zp = self.impedancia_positiva_aterrada_um_ponto()
+        Rp = np.real(Zp)
+        Xp = np.imag(Zp)
+
+        delta_Rb, delta_Xb = self.acrescimos_resistencia_reatancia_positiva()
+        Rpf = self.resistencia_positiva_efetiva(Rp, delta_Rb)
+        Xpf = self.reatancia_positiva_efetiva(Xp, delta_Xb)
         Zpf = np.complex(Rpf, Xpf)
 
         return Zpf
+
+    def impedancia_negativa_aterrada_um_ponto(self):
+        Zn =  self.impedancia_positiva_aterrada_um_ponto()
+        
+        return Zn
+
+    def impedancia_negativa_aterrada_varios_ponto(self):
+        Znf =  self.impedancia_positiva_aterrada_pontos()
+        
+        return Znf
+
+    def resistencia_circuito_retorno_solo(self, resistividade):
+        
+        Rrs = tab49.loc[tab49['Resistividade do solo (Ω.m) '] == resistividade, ['Resistência do circuito de retorno pelo solo (mΩ/m)']].values[0, 0]
+        return Rrs
+
+    def distancia_retorno_solo(self, resistividade):
+
+        Deq = tab49.loc[tab49['Resistividade do solo (Ω.m) '] == resistividade, ['Distância equivalente para o circuito de retorno (mm)']].values[0, 0]
+        return Deq
+        
+    def resistencia_zero(self, Rp, resistividade, R):
+
+        Rz = Rp + R
+
+        return Rz
+
+    def reatancia_zero(self, resistividade):
+
+        Dc = 2 * self.raio_condutor()
+        Rmg = 0.3895 * Dc
+        Dca = self.diametro_externo()
+        D = Dca  # teste
+        Dmg = self.calcular_Dmg(D)
+        Deq =  self.distancia_retorno_solo(resistividade)
+        Xz = 0.2262 * np.log(Deq / (np.sqrt(Rmg + (Dmg**2), order = '3')))
+
+        return Xz
+    
+    def impedancia_zero_solo(self): 
+
+        resistividade = 100 #teste
+        Zp = self.impedancia_positiva_aterrada_um_ponto()
+        Rp = np.real(Zp)
+        Rrs = self.resistencia_circuito_retorno_solo(resistividade)
+        Rz = self.resistencia_zero(Rp, resistividade, Rrs)
+        Xz = self.reatancia_zero(resistividade)
+        Zz = np.complex(Rz, Xz)
+
+        return Zz
+
+    def impedancia_zero_blindagem(self): 
+
+        resistividade = 100 #teste
+        Zp = self.impedancia_positiva_aterrada_um_ponto()
+        Rp = np.real(Zp)
+        Rb = self.resistencia_blindagem()
+        Rz = self.resistencia_zero(Rp, resistividade, Rb)
+        Xz = self.reatancia_zero(resistividade)
+        Zz = np.complex(Rz, Xz)
+
+        return Zz
+
+    #def impedancia_zero_blindagem_solo(self):
+        
+     #   Zz = self.impedancia_zero_solo()
+      #  Rz = np.real(Zz) 
