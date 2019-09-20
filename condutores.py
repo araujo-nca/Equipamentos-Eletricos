@@ -33,10 +33,26 @@ class Condutor():
         self.tensao_fase = tensao_linha / np.sqrt(3)
 
     def gradiente_potencial(self, e_is, e_imp, tensao_fase, B, Rc, A):
-        """ ---- Função para calcular o gradiente de potencial ----
-        Primeiro argumento é a tensão de fase; Segundo argumento é o raio do condutor; Terceiro argumento é a distância B;
-        Quarto argumento é a espessura da camada isolante; Quinto argumento é a constante dielétrica do material isolante;
-        último argumento é a constante dielétrica da impureza"""
+        """Calcula o gradiente de potencial a que fica submetido um vazio ou uma impureza qualquer no interior da isolação [kV/mm].
+        
+            Parâmetros:
+                e_is : número
+                    Constante dielétrica do material isolante.
+
+                e_imp : número
+                    Constante dielétrica do material que constitui a impureza.
+
+                tensao_fase : número
+                    Tensão de fase [kV].
+
+                B : número
+                    Distância entre o ponto considerado no interior da isolação e a superfície do condutor [mm].
+
+                Rc : número
+                    Raio do condutor [mm].
+
+                A : número
+                    Espessura da camada isolante [mm]."""
 
         # Variável que armazena o valor do gradiente de potencial
         Vb = (0.869 * (e_is / e_imp) * self.tensao_fase) / ((B + Rc) * np.log((Rc + A) / Rc))
@@ -44,10 +60,7 @@ class Condutor():
         return Vb
 
     def raio_condutor(self):
-
-        """ ---- Função que retorna o raio do condutor em mm ----
-        Primeiro argumento é to tipo string que fornece o material isolante;
-        Segundo argumento é um fator diâmetro e nive de tensão para a tabela 4.21"""
+        """Retorna o raio do condutor (Rc) [mm]."""
         
         # Variável que armazena o valor do raio do condutor após buscar na tabela
         Rc = (1/2) * tab421.loc[tab421['Tipo de isolação'] == self.material_isolante].loc[tab421['Caracteristica']
@@ -55,11 +68,7 @@ class Condutor():
         return Rc
 
     def distancia_B(self):
-
-        """ ---- Função que retorna a distância entre o ponto considerado no interior da isolação e a superfície do
-        condutor, em mm; ----
-        Primeiro argumento é to tipo string que fornece o material isolante;
-        Segundo argumento é um fator diâmetro e nive de tensão para a tabela 4.21"""
+        """Retorna a distância entre o ponto considerado no interior da isolação e a superfície do condutor (B) [mm]."""
 
         # Variável que armazena da distância B após buscar na tabela
         B = (1/2) * tab421.loc[tab421['Tipo de isolação'] == self.material_isolante].loc[tab421['Caracteristica']
@@ -67,10 +76,7 @@ class Condutor():
         return B
 
     def espessura_camada_isolante(self):
-
-        """ ---- Função que retorna a espessura da camada isolante, em mm; ----
-        Primeiro argumento é to tipo string que fornece o material isolante;
-        Segundo argumento é um fator diâmetro e nive de tensão para a tabela 4.21"""
+        """Retorna a espessura da camada isolante (A) [mm]."""
 
         # Variável que armazena o valor da espessura da isolação após buscar na tabela
         A = tab421.loc[tab421['Tipo de isolação'] == self.material_isolante].loc[tab421['Caracteristica']
@@ -79,9 +85,7 @@ class Condutor():
         return A
 
     def funcao_constante_dieletrica_isolante(self):
-
-        """ ---- Função que retorna a constante dieletrica do material isolante; ----
-        Primeiro argumento é do tipo string que fornece o material isolante;"""
+        """Retorna a constante dieletrica do material isolante (e_is)."""
 
         # Variável que armazena o valor da constante dielétrica do material isolante após buscar na tabela
         constante_dieletrica_isolante = tab46.loc[tab46['Materiais Isolantes'] == self.material_isolante, [
@@ -90,9 +94,7 @@ class Condutor():
         return constante_dieletrica_isolante
 
     def funcao_constante_dieletrica_impureza(self, material_impureza):
-
-        """ ---- Função que retorna a constante dieletrica da impureza; ----
-        Primeiro argumento é to tipo string que fornece o material isolante;"""
+        """Retorna a constante dielétrica do material que constitui a impureza (e_imp)."""
 
         # Variável que armazena o valor da constante dielétrica da impureza após buscar na tabela
         constante_dieletrica_impureza = tab46.loc[tab46['Materiais Isolantes'] == material_impureza, [
@@ -101,10 +103,17 @@ class Condutor():
         return constante_dieletrica_impureza
 
     def capacitancia_cabo(self, Dc, A, Ebi):
+        """Calcula a capacitância do cabo [uF/km].
+        
+           Parâmetros:
+                Dc : número
+                    Diâmetro do condutor [mm].
 
-        """ ---- Função que calcula a caácitância do cabo, em (micro F / km) ----
-        Primeito argumento é o diâmetro do condutor; Segundo argumento é a espessura da camada isolante;
-        Terceiro argumento é a espessura da blindagem interna; Quarto argumento é o tipo do material isolante"""
+                A : número
+                    Espessura da camada isolante [mm].
+
+                Ebi : número
+                    Espessura da blindagem interna das firas semicondutores [mm]."""
 
         # Variável que armazena o valor do diâmetro sobre a isolação do material isolante
         Dsi = Dc + 2 * A + 2 * Ebi
@@ -116,9 +125,11 @@ class Condutor():
         return C
 
     def perdas_dieletricas(self, C):
-        """ ---- Função que calcula as perdas dielétricas do cabo, em W/m ----
-        Primeiro argumento é a capacitância do cabo; Segundo argumento é a tensão de fase do sistema;
-        Terceiro argumento é o tipo do material isolante"""
+        """Calcula as perdas dielétricas do cabo [W/m].
+        
+            Parâmetros:
+                C : número
+                    Capacitância do cabo [uF/km]."""
 
         tangente_delta = tab46.loc[tab46['Materiais Isolantes']
                                 == self.material_isolante, ['tg δ (20ºC)']].values[0,0]
@@ -128,17 +139,21 @@ class Condutor():
         return Pd
 
     def perda_dieletrica_total(self, Pd, comprimento):
-        """ ---- Função que calcula as perdas totais dielétricas do cabo, em W----
-        Primeiro argumento é as perdas dielétricas; Segundo argumento é o comprimento do cabo"""
+        """Calcula as perdas totais dielétricas do cabo [W].
+        
+            Parâmetros:
+                Pd : número
+                    Perdas dielétricas do cabo [W/m].
+                    
+                Comprimento: número
+                    Comprimento do cabo [m]."""
 
         Pdt = Pd * comprimento
 
         return Pdt
 
     def diametro_externo(self):
-        """ ---- Função que retorna o diâmetro externo, em mm; ----
-        Primeiro argumento é to tipo string que fornece o material isolante;
-        Segundo argumento é um fator diâmetro e nivel de tensão para a tabela 4.21"""
+        """Retorna o diâmetro externo do cabo [mm]."""
 
         Dca = tab421.loc[tab421['Tipo de isolação'] == self.material_isolante].loc[tab421['Caracteristica']
                                                                             == 'Diâmetro externo - mm', [self.fator_secao_tensao]].values[0,0]
@@ -146,6 +161,10 @@ class Condutor():
         return Dca
 
     def fator_K(self, fator, encordoamento, fator_diametro):
+        """Retorna o fator K.
+        
+            Parâmetros:
+                INCOMPLETO"""
 
         if fator_diametro != 0:
             K = tab47.loc[tab47['Fator'] == fator].loc[tab47['Condutor'] == encordoamento, [fator_diametro]].values[0,0]
@@ -155,19 +174,40 @@ class Condutor():
         return K
 
     def resistencia_cc(self, K1, K2, K3, p20, a20, Tc, S):
-        """ ---- Função que calcula a resistência à corrente contínua a T°C, em mΩ/m ----
-        Primeiro argumento é o fator K1; Segundo argumento é o fator K2; Terceito argumento é o fator K3;
-        Quarto argumento é a resistividade; Quinto argumento é o coeficiente de temperatura do material do condutor;
-        Sexto argumento é a temperatura do condutor, em °C; último argumento é a seção do condutor, em mm²"""
+        """Calcula a resistência em corrente contínua a T°C [mΩ/m].
+        
+            Parâmetros:
+                K1 : número
+                    Fator que depende do diâmetro dos fios elementares do condutor e do tipo de encordoamento (Tabela 4.7).
+
+                K2 : número
+                    Fator que depende do tipo de encordoamento do condutor (Tabela 4.7).
+
+                K3 : número
+                    Fator que depende do tipo de reunião dos cabos componentes do cabo multipolar (Tabela 4.7).
+
+                p20 : número
+                    Resistividade do material condutor [Ωmm²/m].
+                    
+                a20 : número
+                    Coeficiente de temperatura do material condutor [1/°C].
+                    
+                Tc : número
+                    Temperatura do condutor [°C] (adotar normalmente a temperatura máxima admitida pela isolação).
+                    
+                S : número
+                    Seção do condutor [mm²]."""
 
         Rcc = (1/S) * (1000 * K1 * K2 * K3 * p20) * (1 + a20 * (Tc - 20))
 
         return Rcc
 
     def componente_correcao_efeito_peculiar(self, Rcc):
-        """ ---- Função que calcula a componente que corrige o efeito pelicular da distribuição de corrente na seção
-        do condutor ----
-        Primeiro argumento é a resistência à corrente contínua"""
+        """Calcula a componente que corrige o efeito pelicular da distribuição de corrente na seção do condutor.
+        
+            Parâmetros:
+                Rcc : número
+                    Resistência em corrente contínua a T°C [mΩ/m]."""
 
         Fs = 0.15 / Rcc
         Ys = (Fs**2) / (192 + 0.8 * (Fs**2))
@@ -175,17 +215,26 @@ class Condutor():
         return Ys
 
     def componente_correcao_proximidade_cabos(self, Ys, Dc, Dmg):
-        """ ---- Função que calcula a componente que corrige o efeito de proximidade entre os cabos ----
-        Primeiro argumento é a componente que corrige o efeito peculiar;
-        Segundo argumento é o diâmetro do condutor; Terceiro argumento é o diâmetro médio geométrico"""
+        """Calcula a componente que corrige o efeito de proximidade entre os cabos.
+
+            Parâmetros:
+                Ys : número
+                    Componente que corrige o efeito pelicular da distribuição de corrente na seção do condutor.
+                    
+                Dc : número
+                    Diâmetro do condutor [mm].
+                    
+                Dmg : número
+                    Distância média geométrica do conjunto de cabos componentes [mm]."""
 
         Yp = Ys * ((Dc / Dmg)**2) * ((1.18 / (0.27 + Ys)) + 0.312 * ((Dc / Dmg)**2))
 
         return Yp
 
     def calcular_Dmg(self, D):
-        """ ---- Função que calcula o diâmetro médio geométrico ----
-        Primeiro argumento é a distância que separa os cabos"""
+        """Calcula o diâmetro médio geométrico.
+
+        INCOMPLETO"""
 
         return 1.26 * D
 
