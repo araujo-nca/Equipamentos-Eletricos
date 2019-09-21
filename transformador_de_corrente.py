@@ -1,4 +1,6 @@
+import pandas as pd 
 import math 
+from planilhas import Planilha
 
 
 class TransformadorDeCorrente(object):
@@ -117,3 +119,11 @@ class TransformadorDeCorrente(object):
 
 
 
+
+def main():
+    tabela51 = Planilha().tabela("Transformador de Corrente", "5.1")
+
+    print(tabela51.head())
+
+if __name__ == "__main__":
+    main()
