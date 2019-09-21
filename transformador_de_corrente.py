@@ -121,9 +121,9 @@ class TransformadorDeCorrente(object):
 
 
 def main():
-    tabela51 = Planilha().tabela("Transformador de Corrente", "5.1")
 
-    print(tabela51.head())
+    tabela  = Planilha("Transformador de Potencial", "6.6") 
+    print(tabela.head())
 
 if __name__ == "__main__":
     main()
