@@ -69,7 +69,7 @@ class TransformadorDeCorrente(object):
                     
         """
         # variável que calcula e armazena o fator de sobrecorrente  
-        sobrecorrente = fator_sobrecorrente_nominal* (carga_nominal/carga_secundario)
+        sobrecorrente = fator_sobrecorrente_nominal * (carga_nominal/carga_secundario)
 
         return sobrecorrente
     
@@ -85,6 +85,12 @@ class TransformadorDeCorrente(object):
                 k: tabelado
                     Valor que depende do comprimento do caminho magnético e do número de espiras (tabela 5.5)           
         """
+
+        tabela = Planilha("Transformadores de Corrente", "5.5")
+
+        
+
+        
         # Variável que calcula e armazena a corrente de magnetização
         magnetizacao = k * forca_magnetizacao
 
