@@ -94,7 +94,13 @@ class Condutor():
         return constante_dieletrica_isolante
 
     def funcao_constante_dieletrica_impureza(self, material_impureza):
-        """Retorna a constante dielétrica do material que constitui a impureza (e_imp)."""
+        """Retorna a constante dielétrica do material que constitui a impureza (e_imp).
+        
+            Parâmetros:
+                material_impureza : string
+                    Tipo de material que constitui a isolação.
+                    [PVC, XLPE, EPR, Papel impregnado, Papelão isolante impregnado,
+                     Papelão endurecido, Óleo isolante, Porcelana, Mica, Ar ou Madeira impregnada]"""
 
         # Variável que armazena o valor da constante dielétrica da impureza após buscar na tabela
         constante_dieletrica_impureza = tab46.loc[tab46['Materiais Isolantes'] == material_impureza, [
@@ -113,7 +119,7 @@ class Condutor():
                     Espessura da camada isolante [mm].
 
                 Ebi : número
-                    Espessura da blindagem interna das firas semicondutores [mm]."""
+                    Espessura da blindagem interna das fitas semicondutores [mm]."""
 
         # Variável que armazena o valor do diâmetro sobre a isolação do material isolante
         Dsi = Dc + 2 * A + 2 * Ebi
@@ -145,7 +151,7 @@ class Condutor():
                 Pd : número
                     Perdas dielétricas do cabo [W/m].
                     
-                Comprimento: número
+                comprimento: número
                     Comprimento do cabo [m]."""
 
         Pdt = Pd * comprimento
@@ -239,8 +245,7 @@ class Condutor():
         return 1.26 * D
 
     def resistividade_condutor(self):
-        """ --- Função que retorna a resistividade do condutor ----
-        Primeiro argumento é o tipo do condutor"""
+        """Retorna a resistividade máxima do condutor a 20°C [Ω/mm²/m]."""
 
         resistividade = tab42.loc[tab42['Especificações'] ==
                                 'Resistividade máxima a 20ºC (Ω/mm2/m)', [self.tipo_condutor]].values[0,0]
@@ -248,24 +253,30 @@ class Condutor():
         return resistividade
 
     def coeficiente_temperatura(self):
-        """ --- Função que retorna o coeficiente de temperatura do condutor ----
-        Primeiro argumento é o tipo do condutor"""
+        """Retorna o coeficiente de variação da resistência/°C do condutor a 20°C."""
 
         coeficiente_temperatura = tab42.loc[tab42['Especificações'] ==
                                             'Coeficiente de variação da resistência/ºC a 20ºC', [self.tipo_condutor]].values[0,0]
         return coeficiente_temperatura
 
     def reatancia_positiva(self, Dmg, Dc):
-        """ ---- Função que calcula a reatância positiva ----
-        Primeiro argumento é a distância média geométrica; Segundo argumento é o diâmetro do condutor"""
+        """Calcula a reatância indutiva de sequência positiva [mΩ/m].
+        
+            Parâmetros:
+                Dmg : número
+                    Distância média geométrica do conjunto de cabos componentes [mm].
+                    
+                Dc : número
+                    Diâmetro do condutor [mm]."""
 
         Xp = 0.0754 * np.log((Dmg) / (0.779 * (Dc / 2)))
 
         return Xp
 
     def reatancia_blindagem(self):
-        """ ---- Função que calcula a reatância da blindagem para um ponto de aterramento ----
-        Primeiro argumento é a distância média geométrica; Segundo argumento é o diâmetro médio da blindagem"""
+        """Calcula a reatância da blindagem para um ponto de aterramento [mΩ/m].
+        
+        INCOMPLETO"""
 
         Dca = self.diametro_externo()
         D = Dca  # teste
@@ -275,25 +286,28 @@ class Condutor():
         Ebi = 1 #teste
         Ebe = 1 #teste
         Ebm = 1 #teste
-        Dmb = self.diametro_medio_bindagem(Dc, Ei, Ebi, Ebe, Ebm)
+        Dmb = self.diametro_medio_blindagem(Dc, Ei, Ebi, Ebe, Ebm)
 
         Xb = 0.0754 * np.log((2 * Dmg) / (Dmb))
 
         return Xb
 
     def acrescimo_componente_resistivo(self, Rb, Xb):
-        # """ ---- Função que calcula o acréscimo ao componente resistivo da impedância de sequência positiva ----
-        #     Primeiro argumento é a resistência da blindagem; Segundo argumento é a reatância da blindagem""""
+        """Calcula o acréscimo do componente resistivo da impedância de sequência positiva [mΩ/m].
+        
+            Parâmetros:
+                Rb : número
+                    Resistência da blindagem metálica [mΩ/m].
+                    
+                Xb : número
+                    Reatância indutiva da blindagem metálica [mΩ/m]."""
 
         delta_Rb = Rb / (((Rb / Xb)**2) + 1)
 
         return delta_Rb
 
     def resistencia_blindagem(self):
-        """ ---- Função que calcula a resistência da blindagem ----
-            Primeiro argumento é o coeficiente de temperatura; Segundo argumento é a resistividade
-            Terceiro argumento é a área da seção transversal; Quarto argumento é a temperatura da blindagem;
-            Último argumento é a constante K4"""
+        """Calcula a resistência da blindagem [mΩ/m]."""
 
         K4 = self.fator_K('K4', 'Fio ou encordoamento compacto', self.fator_diametro)
         resistividade = self.resistividade_condutor()
@@ -305,8 +319,14 @@ class Condutor():
         return Rb
 
     def secao_blindagem(self, diametro_fio, intensidade_corrente):
-        """ ---- Função que retorna a seção da blindagem ----
-            Primeiro argumento é o diâmetro do fio; Segundo argumento é a intensidade da corrente que passa no fio"""
+        """Retorna a seção da blindagem [mm²].
+
+            Parâmetros:
+                diametro_fio : número
+                    Diâmetro dos fios [mm].
+                    
+                intensidade_corrente : número
+                    Intensidade máxima admitida em curto-circuito (1 s) [kA]."""
 
         Sb = tab48.loc[tab48['Diâmetro dos fios em mm'] == diametro_fio].loc[tab48['Intensidade máx. adm. em curto-circuito (1s) kA'] == intensidade_corrente, [
             'Seção da blindagem (mm²)']].values[0, 0]
@@ -314,22 +334,38 @@ class Condutor():
         return Sb
 
     def reducao_indutancia(self, M, Rb, Xb):
-        """ ---- Função que calcula a redução da indutância de sequência positiva ----
-            Primeiro argumento é a resistência da blindagem; Segundo argumento é a reatância da blindagem à um ponto de aterramento"""
+        """Calcula a redução da indutância de sequência positiva [mH/km].
+            
+            Parâmetros:
+                M : número
+                    Indutância mútua por fase [mH/km].
+
+                Rb : número
+                    Resistência da blindagem metálica [mΩ/m].
+                    
+                Xb : número
+                    Reatância indutiva da blindagem metálica [mΩ/m]."""
 
         delta_Lb = ((M) / (((Rb / Xb)**2) + 1))
 
         return delta_Lb
 
     def reducao_reatancia_positiva(self, Rb, Xb):
-        """ ---- Função que calcula a redução da reatância de sequência positiva ----
-            Primeiro argumento é a resistência da blindagem; Segundo argumento é a reatância da blindagem à um ponto de aterramento"""
+        """Calcula a redução da reatância de sequência positiva [Ω/km].
+        
+            Parâmetros:                
+                Rb : número
+                    Resistência da blindagem metálica [mΩ/m].
+                    
+                Xb : número
+                    Reatância indutiva da blindagem metálica [mΩ/m]."""
 
         delta_Xb = ((Xb) / (((Rb / Xb)**2) + 1))
 
         return delta_Xb
 
     def acrescimos_resistencia_reatancia_positiva(self):
+        """Retorna os valores de acréscimo das componentes resistiva e indutiva (delta_Rb, delta_Xb) [mΩ/m, Ω/km]."""
 
         Xb = self.reatancia_blindagem()
         Rb = self.resistencia_blindagem()
@@ -340,18 +376,38 @@ class Condutor():
         return delta_Rb, delta_Xb
 
 
-    def diametro_medio_bindagem(self, Dc, Ei, Ebi, Ebe, Ebm):
-        """ ---- Função que calcula o diâmetro médio da blindagem  ----
-            Primeiro argumento é o diâmetro do condutor; Segundo argumento é a espessura da isolação;
-            Terceiro argumento é a espessura da blindagem do interna; Quarto argumento é a espessura da blindagem externa;
-            Último argumento é a espessura da blindagem metálica"""
+    def diametro_medio_blindagem(self, Dc, Ei, Ebi, Ebe, Ebm):
+        """Calcula o diâmetro médio da blindagem [mm].
+        
+            Parâmetros:
+                Dc : número
+                    Diâmetro do condutor [mm].
+
+                Ei : número
+                    Espessura da isolação [mm].
+                    
+                Ebi : número
+                    Espessura da blindagem interna das fitas semicondutores, não condutora [mm].
+                    
+                Ebe : número
+                    Espessura da blindagem externa de campo elétrico, não condutora [mm].
+                    
+                Ebm : número
+                    Espessura da blindagem metálica [mm]."""
 
         Dmb = Dc + 2 * Ei + 2 * Ebi + 2 * Ebe + (Ebm / 2)
 
         return Dmb
 
     def resistencia_positiva(self, Dmg, Dc):
-        """ ---- Função que calcula a resistência positiva ----"""
+        """Calcula a resistência positiva à corrente alternada [mΩ/m].
+        
+            Parâmetros:
+                Dmg : número
+                    Distância média geométrica do conjunto de cabos componentes [mm]
+                    
+                Dc : número
+                    Diâmetro do condutor [mm]."""
         
         K1 = self.fator_K('K1', 'Fio ou encordoamento compacto', self.fator_diametro)
         K2 = self.fator_K('K2', 'Fio ou encordoamento compacto', 0)
@@ -368,27 +424,35 @@ class Condutor():
         return Rp
 
     def reatancia_positiva_efetiva(self, Xp, delta_Xb):
-        """ ---- Função que calcula a reatância positiva efetiva para varios pontos de aterramento ----
-            Primeiro argumento é a reatância positiva para varios pontos de aterramento;
-            último argumento é a redução da reatância positiva"""
+        """Calcula a reatância positiva efetiva para vários pontos de aterramento [mΩ/m].
+        
+            Parâmetros:
+                Xp : número
+                    Reatância indutiva de sequência positiva [mΩ/m].
+                    
+                delta_Xb : número
+                    Componente de redução da reatância de sequência positiva [Ω/km]."""
 
-        Xf = Xp - delta_Xb
+        Xf = Xp - delta_Xb/10e3
 
         return Xf
 
     def resistencia_positiva_efetiva(self, Rp, delta_Rb):
-        """ ---- Função que calcula a resistência positiva efetiva para varios pontos de aterramento ----
-            Primeiro argumento é a resistência positiva para varios pontos de aterramento;
-            último argumento é o acréscimo da resistência positiva"""
+        """Calcula a resistência positiva efetiva para vários pontos de aterramento [mΩ/m].
+        
+            Parâmetros:
+                Rp : número
+                    Resistência positiva à corrente alternada [mΩ/m].
+                    
+                delta_Rb : número
+                    Componente de acréscimo resistivo da impedância de sequência positiva [mΩ/m]."""
 
         Rf = Rp + delta_Rb
 
         return Rf
 
     def impedancia_positiva_aterrada_um_ponto(self):
-        """ ---- Função que calcula a impedância positiva para apenas um ponto de aterramento, "(m Ohms) / m" ----
-
-        Return:     Um float complexo"""
+        """Calcula a impedância de sequência positiva para apenas um ponto de aterramento [mΩ/m]."""
 
         Dc = 2 * self.raio_condutor()
         Dca = self.diametro_externo()
@@ -401,8 +465,7 @@ class Condutor():
         return Zp
 
     def impedancia_positiva_aterrada_pontos(self):
-        """ ---- Função que calcula a impedância positiva para vários pontos de aterramento ----
-            Primeiro argumento é a resistência efetiva positiva; Segundo argumento é a reatância efetiva positiva"""
+        """Calcula a impedância de sequência positiva para vários pontos de aterramento [mΩ/m]."""
 
         Zp = self.impedancia_positiva_aterrada_um_ponto()
         Rp = np.real(Zp)
@@ -416,32 +479,60 @@ class Condutor():
         return Zpf
 
     def impedancia_negativa_aterrada_um_ponto(self):
+        """Calcula a impedância de sequência negativa para apenas um ponto de aterramento [mΩ/m]."""
+
         Zn =  self.impedancia_positiva_aterrada_um_ponto()
         
         return Zn
 
-    def impedancia_negativa_aterrada_varios_ponto(self):
+    def impedancia_negativa_aterrada_varios_pontos(self):
+        """Calcula a impedância de sequência negativa para vários pontos de aterramento [mΩ/m]."""
+
         Znf =  self.impedancia_positiva_aterrada_pontos()
         
         return Znf
 
     def resistencia_circuito_retorno_solo(self, resistividade):
+        """Retorna a resistência de circuito de retorno pelo solo [mΩ/m].
+        
+            Parâmetros:
+                resistividade : número
+                    Resistividade do solo [Ω/m]."""
         
         Rrs = tab49.loc[tab49['Resistividade do solo (Ω.m) '] == resistividade, ['Resistência do circuito de retorno pelo solo (mΩ/m)']].values[0, 0]
+
         return Rrs
 
     def distancia_retorno_solo(self, resistividade):
+        """Retorna a distância equivalente para o circuito de retorno [mm].
+        
+            Parâmetros:
+                resistividade : número
+                    Resistividade do solo [Ω/m]."""
 
         Deq = tab49.loc[tab49['Resistividade do solo (Ω.m) '] == resistividade, ['Distância equivalente para o circuito de retorno (mm)']].values[0, 0]
+
         return Deq
         
-    def resistencia_zero(self, Rp, resistividade, R):
+    def resistencia_zero(self, Rp, Rrs):
+        """Calcula a resistência de sequência zero [mΩ/m].
+        
+            Parâmetros:
+                Rp : número
+                    Resistência positiva à corrente alternada [mΩ/m].
+                    
+                Rrs : número
+                    Resistência de circuito de retorno pelo solo [mΩ/m]."""
 
-        Rz = Rp + R
+        Rz = Rp + Rrs
 
         return Rz
 
     def reatancia_zero(self, resistividade):
+        """Calcula a reatância de sequência zero [mΩ/m].
+        
+        INCOMPLETO"""
+
 
         Dc = 2 * self.raio_condutor()
         Rmg = 0.3895 * Dc
@@ -454,12 +545,15 @@ class Condutor():
         return Xz
     
     def impedancia_zero_solo(self): 
+        """Calcula a impedância de sequência zero [mΩ/m].
+        
+        INCOMPLETO"""
 
         resistividade = 100 #teste
         Zp = self.impedancia_positiva_aterrada_um_ponto()
         Rp = np.real(Zp)
         Rrs = self.resistencia_circuito_retorno_solo(resistividade)
-        Rz = self.resistencia_zero(Rp, resistividade, Rrs)
+        Rz = self.resistencia_zero(Rp, Rrs)
         Xz = self.reatancia_zero(resistividade)
         Zz = np.complex(Rz, Xz)
 
@@ -471,7 +565,7 @@ class Condutor():
         Zp = self.impedancia_positiva_aterrada_um_ponto()
         Rp = np.real(Zp)
         Rb = self.resistencia_blindagem()
-        Rz = self.resistencia_zero(Rp, resistividade, Rb)
+        Rz = self.resistencia_zero(Rp, Rb)
         Xz = self.reatancia_zero(resistividade)
         Zz = np.complex(Rz, Xz)
 
