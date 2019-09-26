@@ -1,59 +1,66 @@
 import numpy as np
 
-class Carga():
+# class Carga():
 
-    def __init__(self, contactores, potencia_carga):
+#     def __init__(self, contactores, potencia_carga):
 
-        self.contactores = contactores
-        self.potencia_carga = potencia_carga
+#         self.contactores = contactores
+#         self.potencia_carga = potencia_carga
 
-    def potencia_aparente(self):
-        potencias_ativa = []
-        potencias_reativas = []
+#     def potencias_por_regime(self):
+#         potencias_ativas_permanente = []
+#         potencias_ativas_curta_duracao = []
+#         potencias_reativas_permanente = []
+#         potencias_reativas_curta_duracao = []
     
-        #for contactor, regime in self.contactores.values():
-            #potencias_ativa = self.potencia_ativa_total(contactor, regime)
-            #potencias_reativas = self.potencia_reativa_total(contactor, regime)
-        Pt = 0
-        Qt = 0
-        for potencia_aparente in zip(potencias_ativa, potencias_reativas):
-            Pt += potencia_aparente[0]
-            Qt += potencia_aparente[1]
+#         for contactor, regime in self.contactores.values():
+#             if regime == 'Permanente':
+#                 potencia_ativa = self.potencia_ativa(contactor, regime)
+#                 potencias_ativas_permanente.append(potencia_ativa)
+#                 potencia_reativa = self.potencia_reativa(contactor, regime)
+#                 potencias_reativas_permanente.append(potencia_reativa)
 
-        S = np.complex(Pt, Qt)
+#             elif regime == 'Curta duração':
+#                 potencia_ativa = self.potencia_ativa(contactor, regime)
+#                 potencias_ativas_curta_duracao.append(potencia_ativa)
+#                 potencia_reativa = self.potencia_reativa(contactor, regime)
+#                 potencias_reativas_curta_duracao.append(potencia_reativa)
 
-        return S
+#         Pt_permanente = 0
+#         Qt_permanente = 0
+#         Pt_curta_duracao = 0
+#         Qt_curta_duracao = 0
 
-    def potencia_ativa_total(self, contactor, regime):
-       
-        #falta adicionar a tabela 6.4
-        #incluir o regime
-        #potencia_individual_ativa = tab.loc[tab['Contactor'] == contactor], ['Potência Ativa']].values[0,0]
-        #potencias_ativa.append(potencia_individual_ativa)
-
-        #return potencias_ativa
-
-    def potencia_reativa_total(self, contactor, regime):
-        #potencia_individual_reativa = tab.loc[tab['Contactor'] == contactor], ['Potência Reativa']].values[0,0]
-        #incluir o regime
-        #potencias_reativa.append(potencia_individual_reativa)
-
-        #return potencias_reativa
-
-    def fator_potencia(self):
-
-        S_permanente, S_curta_duracao = self.potencia_por_regime()
-        Fp1 = np.real(S_permanente) / np.absolute(S_permanente)
-        Fp2 = np.real(S_curta_duracao) / np.absolute(S_curta_duracao)
+#         for potencia_aparente_permanente in zip(potencias_ativas_permanente, potencias_reativas_permanente):
+#             Pt_permanente += potencia_aparente_permanente[0]
+#             Qt_permanente += potencia_aparente_permanente[1]
         
-        return Fp1, Fp2
+#         for potencia_aparente_curta_duracao in zip(potencias_ativas_permanente, potencias_reativas_permanente):
+#             Pt_curta_duracao += potencia_aparente_curta_duracao[0]
+#             Qt_curta_duracao += potencia_aparente_curta_duracao[1]
 
-    def potencia_por_regime(self):
-        #falta sincronizar
-        S_permanente = self.potencia_aparente()
-        S_curta_duracao = self.potencia_aparente()
+#         S_permanente = np.complex(Pt_permanente, Qt_permanente)
+#         S_curta_duracao = np.complex(Pt_curta_duracao, Qt_curta_duracao)
 
-        return S_permanente, S_curta_duracao
-    
-    def impedancia_carga(self):
-        #pegar da tabela 6.2
+#         return S_permanente, S_curta_duracao 
+
+#     def potencia_ativa(self, contactor, regime):
+#         #falta adicionar a tabela 6.4
+        
+#        # potencia_individual_ativa = tab.loc[tab['Contactor'] == contactor], ['Potência Ativa']].values[0,0]
+        
+#        # return potencia_individual_ativa
+
+#     def potencia_reativa(self, contactor, regime):
+
+#         #potencia_individual_reativa = tab.loc[tab['Contactor'] == contactor], ['Potência Reativa']].values[0,0]
+        
+#         #return potencia_individual_reativa
+
+#     def fator_potencia(self):
+
+#         S_permanente, S_curta_duracao = self.potencias_por_regime()
+#         Fp1 = np.real(S_permanente) / np.absolute(S_permanente)
+#         Fp2 = np.real(S_curta_duracao) / np.absolute(S_curta_duracao)
+        
+#         return Fp1, Fp2
