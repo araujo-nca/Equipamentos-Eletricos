@@ -1,6 +1,4 @@
-import pandas as pd 
 import math 
-from planilhas import Planilha
 
 
 class TransformadorDeCorrente(object):
@@ -57,7 +55,7 @@ class TransformadorDeCorrente(object):
                     Fator de sobrecorrente nominal (geralmente 20) [adimensional]."""        
 
         # variável que calcula e armazena o fator de sobrecorrente  
-        sobrecorrente = fator_sobrecorrente_nominal * (carga_nominal/carga_secundario)
+        sobrecorrente = fator_sobrecorrente_nominal* (carga_nominal/carga_secundario)
 
         return sobrecorrente
     
@@ -71,18 +69,6 @@ class TransformadorDeCorrente(object):
                 k: número
                     Valor que depende do comprimento do caminho magnético e do número de espiras (Tabela 5.5)."""
 
-<<<<<<< HEAD
-=======
-                k: tabelado
-                    Valor que depende do comprimento do caminho magnético e do número de espiras (tabela 5.5)           
-        """
-
-        tabela = Planilha("Transformadores de Corrente", "5.5")
-
-        
-
-        
->>>>>>> origin/trabalhando_sabado
         # Variável que calcula e armazena a corrente de magnetização
         magnetizacao = k * forca_magnetizacao
 
@@ -114,11 +100,3 @@ class TransformadorDeCorrente(object):
 
 
 
-
-def main():
-
-    tabela  = Planilha("Transformador de Potencial", "6.6") 
-    print(tabela.head())
-
-if __name__ == "__main__":
-    main()
