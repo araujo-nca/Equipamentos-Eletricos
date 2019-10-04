@@ -1,28 +1,36 @@
 import pandas as pd
+import platform
 
-class Leitura():
-    """ ----- Classe para criar a tabela de um arquivo do Excel -----
-        Primeiro Argumento é o número da Tabela referente ao livro do Mamede 4ª Ed
-        Segundo Argumento é uma string com o nome da planilha"""
 
-    def tabela_condutores(self, sheet_name):
+def Planilha(equipamento, tabela):
+    """Função para criar a tabela de um arquivo do Excel
 
-        try:
-            # Variável que armazena a planilha em formato Pandas    
-            sheet = pd.read_excel("/home/deilson/Equipamentos-Eletricos/tabelas_condutores.xlsx", sheet_name = sheet_name)
-        except:
-            # Sai do programa caso o nome da planilha esteja errado
-            exit("Não existe planilha com o nome {sheet_name}")
+    Parâmetros:
 
-        return sheet
+        equipamento: string
+
+            Equipamento que se precisa consultar a tabela
+
+        tabela: string
+
+            Número da Tabela referente ao livro do Mamede 4ª Ed """
+
     
-    def tabela_TP(self, sheet_name):
+    try:
+        # Variável que armazena a planilha em formato Pandas    
+        if(sistema == "Windows"):
+            sheet = pd.read_excel(f"Tabelas/{equipamento}.xlsx", sheet_name = tabela)
+        
+        # Fiz isso pois não sei se o diretório no sistema linux funciona da mesma maneira. Caso tenha erro, mudar essa parte do código.
+        elif(sistema == "Linux"):
+            sheet = pd.read_excel(f"Tabelas/{equipamento}.xlsx", sheet_name = tabela)
 
-        try:
-            # Variável que armazena a planilha em formato Pandas    
-            sheet = pd.read_excel("/home/deilson/Equipamentos-Eletricos/tabelas_TP.xlsx", sheet_name = sheet_name)
-        except:
-            # Sai do programa caso o nome da planilha esteja errado
-            exit("Não existe planilha com o nome {sheet_name}")
+        else:
+            exit("Sistema Operacional não reconhecido.")
 
-        return sheet
+    except:
+        # Sai do programa caso o nome da planilha esteja errado
+        exit(f"Não existe planilha com o nome {tabela}")
+
+    return sheet
+
