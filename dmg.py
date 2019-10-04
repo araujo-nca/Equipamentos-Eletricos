@@ -62,6 +62,7 @@ class Dmg():
                 distancia_3 : número
                     Distância 3 entre os condutores unipolares."""
 
+        # Dmg recebe a raiz cubica da soma das distancias ao quadrado
         Dmg = np.cbrt(distancia_1**2 + distancia_2**2 + distancia_3**2)
 
         return Dmg
