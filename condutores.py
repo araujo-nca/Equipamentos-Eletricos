@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from dmg import Dmg
 from leituras import Leitura
 
 leitura = Leitura() 
@@ -24,6 +25,7 @@ class Condutor():
             fator_secao_tensao : string ou numero
                 Um número para a seção do condutor, para a classe de tensão "8.7kV - 15kV";
                     para classes de tensão diferentes, inserir o número para a seção do condutor + ".1", ex: "300.1"."""
+    
     def __init__(self, material_isolante, tipo_condutor, fator_secao_tensao, fator_diametro, tensao_linha):
 
         self.material_isolante = material_isolante
@@ -236,13 +238,6 @@ class Condutor():
         Yp = Ys * ((Dc / Dmg)**2) * ((1.18 / (0.27 + Ys)) + 0.312 * ((Dc / Dmg)**2))
 
         return Yp
-
-    def calcular_Dmg(self, D):
-        """Calcula o diâmetro médio geométrico.
-
-        INCOMPLETO"""
-
-        return 1.26 * D
 
     def resistividade_condutor(self):
         """Retorna a resistividade máxima do condutor a 20°C [Ω/mm²/m]."""
