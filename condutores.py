@@ -6,9 +6,11 @@ from dmg import Dmg
 class Condutor():
     """Parâmetros: 
             material_isolante : string
+
                 Uma string que informa o tipo do material isolante: XLPE, EPR.
 
             tipo_condutor : string
+            
                 Uma string que informa o material do condutor: "Fio de alumínio duro"; 
                     "Fio de cobre duro"; "IACS – padrão internacional de cobre recozido"; 
                     "Zincado para alma de cabos de alumínio".

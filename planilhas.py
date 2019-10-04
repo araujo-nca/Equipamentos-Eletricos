@@ -1,6 +1,7 @@
 import pandas as pd
 import platform
 
+sistema = platform.system() 
 
 def Planilha(equipamento, tabela):
     """Função para criar a tabela de um arquivo do Excel
@@ -34,3 +35,7 @@ def Planilha(equipamento, tabela):
 
     return sheet
 
+
+teste = Planilha("Transformador de Corrente", "5.1")
+
+print(teste.head())
