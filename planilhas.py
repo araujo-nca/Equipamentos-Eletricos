@@ -2,9 +2,6 @@ import pandas as pd
 import platform
 
 
-sistema = platform.system()
-
-
 def Planilha(equipamento, tabela):
     """Função para criar a tabela de um arquivo do Excel
 

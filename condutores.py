@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+<<<<<<< HEAD
+from banco_dados import tab421, tab42, tab46, tab47, tab48, tab49
+=======
 from dmg import Dmg
 from leituras import Leitura
 
@@ -11,6 +14,7 @@ tab46 = leitura.tabela(sheet_name = "4.6")
 tab47 = leitura.tabela(sheet_name = "4.7")
 tab48 = leitura.tabela(sheet_name = "4.8")
 tab49 = leitura.tabela(sheet_name = "4.9")
+>>>>>>> upstream/master
 
 class Condutor():
     """Parâmetros: 

@@ -3,10 +3,14 @@ from carga import Carga
  
 class TP():
 
-    def __init__(self, tensao_primario, fator_correcao, tensao_medida):
+    def __init__(self, tensao_primario, fator_correcao, tensao_medida, grupo, contactores, potencia_carga):
         
+        #Constroi o objeto de carga
+        self.carga = Carga(contactores, potencia_carga) 
         #Recebe o parâmetro de tensão no primário
         self.tensao_primario = tensao_primario 
+        # Recebe o parâmetro grupo do TP
+        self.grupo = grupo
         #Recebe o parâmetro defator de correção
         self.fator_correcao = fator_correcao
         #Recebe o parâmetro de tensão de medida
@@ -105,19 +109,21 @@ class TP():
         S_permanente, S_curta_duracao = self.carga.potencia_por_regime()
         #utilizara a tabela 6.5 para determinar o trafo potencial
 
-    # def constante_K_termica(self):
+    def constante_K_termica(self):
 
-    #     #grupo = pegar da tabela 6.6
-    #     if grupo == 1 or grupo == 2:
-    #         return 1.33
-    #     elif grupo == 3:
-    #         return 3.6
-
-    # def potencia_termica(self):
+        if self.grupo == 1 or self.grupo == 2:
+            
+            return 1.33
         
-    #     Zcn = self.carga.impedancia_carga()
-    #     K = self.constante_K_termica():
-    #     Vs = self.tensao_secundaria()
-    #     Pth = 1.21 * K * (Vs ** 2) / (Zcn)
+        elif self.grupo == 3:
+            
+            return 3.6
 
-    #     return Pth
+    def potencia_termica(self):
+        
+        Zcn = self.carga.impedancia_carga()
+        K = self.constante_K_termica()
+        Vs = self.tensao_secundaria()
+        Pth = 1.21 * K * (Vs ** 2) / (Zcn)
+
+        return Pth
