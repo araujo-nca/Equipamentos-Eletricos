@@ -34,8 +34,3 @@ def Planilha(equipamento, tabela):
         exit(f"Não existe planilha com o nome {tabela}")
 
     return sheet
-
-
-teste = Planilha("Transformador de Corrente", "5.1")
-
-print(teste.head())
