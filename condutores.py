@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from banco_dados import tab421, tab42, tab46, tab47, tab48, tab49
+from dmg import Dmg
 
 class Condutor():
     """Parâmetros: 
@@ -16,15 +17,14 @@ class Condutor():
                 Um número para a seção do condutor, para a classe de tensão "8.7kV - 15kV";
                     para classes de tensão diferentes, inserir o número para a seção do condutor + ".1", ex: "300.1"."""
     
-    def __init__(self, material_isolante, tipo_condutor, fator_secao_tensao, fator_diametro, tensao_linha):
+    def __init__(self, material_isolante, tipo_condutor): #fator_diametro):
 
         self.material_isolante = material_isolante
         self.tipo_condutor = tipo_condutor
-        self.fator_secao_tensao = fator_secao_tensao
-        self.fator_diametro = fator_diametro
-        self.tensao_fase = tensao_linha / np.sqrt(3)
+        #self.fator_diametro = fator_diametro
+        self.dmg = Dmg()
 
-    def gradiente_potencial(self, e_is, e_imp, tensao_fase, B, Rc, A):
+    def gradiente_potencial(self, e_is, e_imp, B, Rc, A, tensao_fase):
         """Calcula o gradiente de potencial a que fica submetido um vazio ou uma impureza qualquer no interior da isolação [kV/mm].
         
             Parâmetros:
@@ -47,7 +47,7 @@ class Condutor():
                     Espessura da camada isolante [mm]."""
 
         # Variável que armazena o valor do gradiente de potencial
-        Vb = (0.869 * (e_is / e_imp) * self.tensao_fase) / ((B + Rc) * np.log((Rc + A) / Rc))
+        Vb = (0.869 * (e_is / e_imp) * tensao_fase) / ((B + Rc) * np.log((Rc + A) / Rc))
 
         return Vb
 
@@ -122,7 +122,7 @@ class Condutor():
 
         return C
 
-    def perdas_dieletricas(self, C):
+    def perdas_dieletricas(self, C, tensao_fase):
         """Calcula as perdas dielétricas do cabo [W/m].
         
             Parâmetros:
@@ -132,7 +132,7 @@ class Condutor():
         tangente_delta = tab46.loc[tab46['Materiais Isolantes']
                                 == self.material_isolante, ['tg δ (20ºC)']].values[0,0]
 
-        Pd = 0.3769 * C * (self.tensao_fase**2) * tangente_delta
+        Pd = 0.3769 * C * (tensao_fase**2) * tangente_delta
 
         return Pd
 
@@ -150,11 +150,11 @@ class Condutor():
 
         return Pdt
 
-    def diametro_externo(self):
+    def diametro_externo(self, fator_secao_tensao):
         """Retorna o diâmetro externo do cabo [mm]."""
 
         Dca = tab421.loc[tab421['Tipo de isolação'] == self.material_isolante].loc[tab421['Caracteristica']
-                                                                            == 'Diâmetro externo - mm', [self.fator_secao_tensao]].values[0,0]
+                                                                            == 'Diâmetro externo - mm', [fator_secao_tensao]].values[0,0]
 
         return Dca
 
@@ -263,9 +263,6 @@ class Condutor():
         
         INCOMPLETO"""
 
-        Dca = self.diametro_externo()
-        D = Dca  # teste
-        Dmg = self.calcular_Dmg(D)
         Dc = 2 * self.raio_condutor()
         Ei = self.espessura_camada_isolante()
         Ebi = 1 #teste
@@ -273,7 +270,7 @@ class Condutor():
         Ebm = 1 #teste
         Dmb = self.diametro_medio_blindagem(Dc, Ei, Ebi, Ebe, Ebm)
 
-        Xb = 0.0754 * np.log((2 * Dmg) / (Dmb))
+        Xb = 0.0754 * np.log((2 * self.dmg) / (Dmb))
 
         return Xb
 
@@ -291,10 +288,10 @@ class Condutor():
 
         return delta_Rb
 
-    def resistencia_blindagem(self):
+    def resistencia_blindagem(self, fator_diametro):
         """Calcula a resistência da blindagem [mΩ/m]."""
 
-        K4 = self.fator_K('K4', 'Fio ou encordoamento compacto', self.fator_diametro)
+        K4 = self.fator_K('K4', 'Fio ou encordoamento compacto', fator_diametro)
         resistividade = self.resistividade_condutor()
         coeficiente_temp = self.coeficiente_temperatura()
         Sb = 300#self.secao_blindagem(diametro_fio, intensidade_corrente)
@@ -349,11 +346,11 @@ class Condutor():
 
         return delta_Xb
 
-    def acrescimos_resistencia_reatancia_positiva(self):
+    def acrescimos_resistencia_reatancia_positiva(self, fator_diametro):
         """Retorna os valores de acréscimo das componentes resistiva e indutiva (delta_Rb, delta_Xb) [mΩ/m, Ω/km]."""
 
         Xb = self.reatancia_blindagem()
-        Rb = self.resistencia_blindagem()
+        Rb = self.resistencia_blindagem(fator_diametro)
 
         delta_Rb = self.acrescimo_componente_resistivo(Rb, Xb)
         delta_Xb = self.reducao_reatancia_positiva(Rb, Xb)
@@ -384,7 +381,7 @@ class Condutor():
 
         return Dmb
 
-    def resistencia_positiva(self, Dmg, Dc):
+    def resistencia_positiva(self, Dmg, Dc, fator_diametro):
         """Calcula a resistência positiva à corrente alternada [mΩ/m].
         
             Parâmetros:
@@ -394,7 +391,7 @@ class Condutor():
                 Dc : número
                     Diâmetro do condutor [mm]."""
         
-        K1 = self.fator_K('K1', 'Fio ou encordoamento compacto', self.fator_diametro)
+        K1 = self.fator_K('K1', 'Fio ou encordoamento compacto', fator_diametro)
         K2 = self.fator_K('K2', 'Fio ou encordoamento compacto', 0)
         K3 = self.fator_K('K3', 'Cabos singelos', 0)
         p20 = self.resistividade_condutor()
@@ -436,44 +433,41 @@ class Condutor():
 
         return Rf
 
-    def impedancia_positiva_aterrada_um_ponto(self):
+    def impedancia_positiva_aterrada_um_ponto(self, fator_diametro):
         """Calcula a impedância de sequência positiva para apenas um ponto de aterramento [mΩ/m]."""
 
         Dc = 2 * self.raio_condutor()
-        Dca = self.diametro_externo()
-        D = Dca  # teste
-        Dmg = self.calcular_Dmg(D)
-        Rp = self.resistencia_positiva(Dmg, Dc)
-        Xp = self. reatancia_positiva(Dmg, Dc)
+        Rp = self.resistencia_positiva(self.dmg, Dc, fator_diametro)
+        Xp = self. reatancia_positiva(self.dmg, Dc)
         Zp = np.complex(Rp, Xp)
 
         return Zp
 
-    def impedancia_positiva_aterrada_pontos(self):
+    def impedancia_positiva_aterrada_pontos(self, fator_diametro):
         """Calcula a impedância de sequência positiva para vários pontos de aterramento [mΩ/m]."""
 
-        Zp = self.impedancia_positiva_aterrada_um_ponto()
+        Zp = self.impedancia_positiva_aterrada_um_ponto(fator_diametro)
         Rp = np.real(Zp)
         Xp = np.imag(Zp)
 
-        delta_Rb, delta_Xb = self.acrescimos_resistencia_reatancia_positiva()
+        delta_Rb, delta_Xb = self.acrescimos_resistencia_reatancia_positiva(fator_diametro)
         Rpf = self.resistencia_positiva_efetiva(Rp, delta_Rb)
         Xpf = self.reatancia_positiva_efetiva(Xp, delta_Xb)
         Zpf = np.complex(Rpf, Xpf)
 
         return Zpf
 
-    def impedancia_negativa_aterrada_um_ponto(self):
+    def impedancia_negativa_aterrada_um_ponto(self, fator_diametro):
         """Calcula a impedância de sequência negativa para apenas um ponto de aterramento [mΩ/m]."""
 
-        Zn =  self.impedancia_positiva_aterrada_um_ponto()
+        Zn =  self.impedancia_positiva_aterrada_um_ponto(fator_diametro)
         
         return Zn
 
-    def impedancia_negativa_aterrada_varios_pontos(self):
+    def impedancia_negativa_aterrada_varios_pontos(self, fator_diametro):
         """Calcula a impedância de sequência negativa para vários pontos de aterramento [mΩ/m]."""
 
-        Znf =  self.impedancia_positiva_aterrada_pontos()
+        Znf =  self.impedancia_positiva_aterrada_pontos(fator_diametro)
         
         return Znf
 
@@ -518,24 +512,19 @@ class Condutor():
         
         INCOMPLETO"""
 
-
         Dc = 2 * self.raio_condutor()
-        Rmg = 0.3895 * Dc
-        Dca = self.diametro_externo()
-        D = Dca  # teste
-        Dmg = self.calcular_Dmg(D)
         Deq =  self.distancia_retorno_solo(resistividade)
-        Xz = 0.2262 * np.log(Deq / (np.sqrt(Rmg + (Dmg**2), order = '3')))
+        Xz = 0.2262 * np.log(Deq / (np.sqrt(self.dmg + (self.dmg**2), order = '3')))
 
         return Xz
     
-    def impedancia_zero_solo(self): 
+    def impedancia_zero_solo(self, fator_diametro): 
         """Calcula a impedância de sequência zero [mΩ/m].
         
         INCOMPLETO"""
 
         resistividade = 100 #teste
-        Zp = self.impedancia_positiva_aterrada_um_ponto()
+        Zp = self.impedancia_positiva_aterrada_um_ponto(fator_diametro)
         Rp = np.real(Zp)
         Rrs = self.resistencia_circuito_retorno_solo(resistividade)
         Rz = self.resistencia_zero(Rp, Rrs)
@@ -544,19 +533,21 @@ class Condutor():
 
         return Zz
 
-    def impedancia_zero_blindagem(self): 
+    def impedancia_zero_blindagem(self, fator_diametro): 
 
         resistividade = 100 #teste
-        Zp = self.impedancia_positiva_aterrada_um_ponto()
+        Zp = self.impedancia_positiva_aterrada_um_ponto(fator_diametro)
         Rp = np.real(Zp)
-        Rb = self.resistencia_blindagem()
+        Rb = self.resistencia_blindagem(fator_diametro)
         Rz = self.resistencia_zero(Rp, Rb)
         Xz = self.reatancia_zero(resistividade)
         Zz = np.complex(Rz, Xz)
 
         return Zz
 
-    #def impedancia_zero_blindagem_solo(self):
+    def impedancia_zero_blindagem_solo(self, fator_diametro):
         
-     #   Zz = self.impedancia_zero_solo()
-      #  Rz = np.real(Zz) 
+        Zz = self.impedancia_zero_solo(fator_diametro)
+        Rz = np.real(Zz) 
+
+        return np.complex(Rz, Zz)
