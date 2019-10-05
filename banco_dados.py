@@ -23,4 +23,6 @@ tab56 = Planilha("Transformador de Corrente", "5.6")
 tab57 = Planilha("Transformador de Corrente", "5.7")
 
 
+print(tab51.head())
+
 
