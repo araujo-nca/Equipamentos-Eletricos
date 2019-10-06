@@ -70,8 +70,8 @@ class TC(object):
                 forca_magnetizacao: número
                     Força de magnetização [mA/m].
         
-                k: número
-                    Valor que depende do comprimento do caminho magnético e do número de espiras (Tabela 5.5)."""
+                amp_espira: número
+                    Valor da magnetização [A.e]."""
         
         # Lê a tabela 5.5 de Transformador de Corrente
         tabela = Planilha("Transformador de Corrente", "5.5")

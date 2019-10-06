@@ -34,19 +34,3 @@ def Planilha(equipamento, tabela):
         exit(f"Não existe planilha com o nome {tabela}")
 
     return sheet
-
-
-
-def main():
-    tabela = Planilha("Transformador de Corrente", "5.5")
-
-    tensao = tabela[15]
-    ampere_espira = tabela.set_index("Ampéres - espiras (AS)")
-
-    print(tabela.columns)
-    print(tabela)
-    print(ampere_espira)
-
-
-if __name__ == "__main__":
-    main()
