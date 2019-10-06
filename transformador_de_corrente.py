@@ -1,8 +1,9 @@
-import math 
+import math
+import numpy as np
+from planilhas import Planilha
+from magnetizacao import fluxo_curva_bxh
 
-
-class TransformadorDeCorrente(object):
-
+class TC(object):
 
 
     def __init__(self, potencia_nominal, tensao_nominal, tipo = None):
@@ -37,7 +38,10 @@ class TransformadorDeCorrente(object):
                     Impedância do condutor [Ω/m]."""
 
         # Variável que calcula e armazena o valor carga efetiva do TC
-        carga_total = soma_das_cargas_conectadas + comprimento_condutor * impedancia_condutor * self.corrente_secundario**2
+        carga_total = soma_das_cargas_conectadas + comprimento_condutor * np.complex(impedancia_condutor) * self.corrente_secundario**2
+
+        carga_total = np.abs(carga_total)
+
 
         return carga_total
 
@@ -59,20 +63,42 @@ class TransformadorDeCorrente(object):
 
         return sobrecorrente
     
-    def corrente_magnetizacao(self, forca_magnetizacao, k):
+    def corrente_magnetizacao(self, forca_magnetizacao, amp_espira):
         """Calcula a corrente de magnetização de acordo com a saturação do núcleo [mA].
         
             Parâmetros:
                 forca_magnetizacao: número
                     Força de magnetização [mA/m].
         
-                k: número
-                    Valor que depende do comprimento do caminho magnético e do número de espiras (Tabela 5.5)."""
+                amp_espira: número
+                    Valor da magnetização [A.e]."""
+        
+        # Lê a tabela 5.5 de Transformador de Corrente
+        tabela = Planilha("Transformador de Corrente", "5.5")
+
+        # Usa o Ampere-Espira como o buscador de valores
+        ampere_espira = tabela.set_index("Ampéres - espiras (AS)")
+
+        # Busca a grandeza K para o valor de tensão de 15 kv
+        if(self.tensao_nominal == 15):
+            grandeza_k = np.float(ampere_espira.loc[[amp_espira],[15]].values)
+            
+        # Busca a grandeza K para o valor de tensão de 34.5 kv    
+        elif(self.tensao_nominal == 34.5):
+            grandeza_k = np.float(ampere_espira.loc[[amp_espira],[34.5]].values)
+            
+        # Busca a grandeza K para o valor de tensão de 72.6 kv    
+        elif(self.tensao_nominal == 72.6):
+            grandeza_k = np.float(ampere_espira.loc[[amp_espira],[72.6]].values)
+            
+        # Finaliza o programa caso o valor de tensão nominal não esteja na tabela 5.5
+        else:
+            exit(f"A tensão nominal de {self.tensao_nominal} não está especificada na tabela 5.5!")
 
         # Variável que calcula e armazena a corrente de magnetização
-        magnetizacao = k * forca_magnetizacao
+        corrente_magnetizante = grandeza_k * forca_magnetizacao
 
-        return magnetizacao
+        return corrente_magnetizante
 
     def tensao_secundario(self, corrente_secundario, resistencia_carga, resistencia_enrolamento, reatancia_carga, reatancia_enrolamento_secundario):
         """Calcula a tensão nos terminais secundários do TC em [V]
@@ -97,6 +123,3 @@ class TransformadorDeCorrente(object):
         tensao = corrente_secundario * math.sqrt((resistencia_carga + resistencia_enrolamento)**2 + (reatancia_carga + reatancia_enrolamento_secundario)**2)
 
         return tensao
-
-
-
