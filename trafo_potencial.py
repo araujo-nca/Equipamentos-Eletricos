@@ -1,27 +1,20 @@
 import numpy as np
-# from carga import Carga
+from PIL import Image
  
 class TP():
     """Parâmetros: 
-            tensao_medida_secundario : número
-                Tensão medida no secundário do transformador [V].
             tensao_primaria_nominal : número
-                Tensão nominal no primário do transformador [V]."""
+                Tensão nominal no primário do transformador [V].
+
+            tensao_medida_secundario : número (opcional)
+                Tensão medida no secundário do transformador [V]."""
 
     def __init__(self, tensao_primaria_nominal, tensao_medida_secundario = None):
         
-        # #Constroi o objeto de carga
-        # self.carga = Carga(contactores, potencia_carga) 
-
-        # #Recebe o parâmetro grupo do TP
-        # self.grupo = grupo
-
-
         self.tensao_medida_secundario = tensao_medida_secundario
         self.tensao_primaria_nominal = tensao_primaria_nominal
         self.tensao_nominal_secundario = 115
         self.RTPn = None
-
 
         if self.tensao_medida_secundario:
 
@@ -33,6 +26,7 @@ class TP():
 
 
     def RTPr(self, tensao_primaria_aplicada = None, RTPn = None, erro_fator_correcao_de_relacao = None, FCRp = None):
+        """"""
 
         if tensao_primaria_aplicada and self.tensao_medida_secundario:
             # Calcula o parâmetro RTPr (Relação de transformação de potencial real)
@@ -90,10 +84,13 @@ class TP():
 
         return delta_tensao_primario
 
-    # def classe_exatidao(self, erro_angulo_defasagem):
-     
-    #     return delta_tensao
+    def classe_de_exatidao(self, angulo_fase = None, FCRp = None):
 
+        img_classe_exatidao = Image.open('figura_classedeexatidao.png')
+        img_classe_exatidao.show()
+
+        return
+    
     def tensao_secundario(self, RTPn):
         
         v_secundario = self.tensao_primaria_nominal / RTPn
@@ -128,7 +125,6 @@ class TP():
         
         return FCRct
 
-
     def angulo_fase_total(self, angulo_fase, tensao_secundario, FP_carga, corrente_carga, comprimento_condutor, resistencia_condutor, reatancia_condutor):
         
         Ic = corrente_carga
@@ -142,32 +138,3 @@ class TP():
         gamma_ct = angulo_fase + (3.438 * Ic * 2 * Lc) / tensao_secundario * (Rc * np.sin(theta_carga) + Xc * FP) / 1000
 
         return gamma_ct
-
-    # # def determinar_transformador_potencial(self, contactores, potencia_carga):
-        
-    # #     #Constrói o objeto carga
-    # #     self.carga = Carga(contactores, potencia_carga) #entrar parametros
-    # #     #Recebe os fatores de potência 
-    # #     Fp1, Fp2 = self.carga.fator_potencia()
-    # #     #Recebe as potências em regime permanente e regime curta duração 
-    # #     S_permanente, S_curta_duracao = self.carga.potencia_por_regime()
-    # #     #utilizara a tabela 6.5 para determinar o trafo potencial
-
-    # def constante_K_termica(self):
-
-    #     if self.grupo == 1 or self.grupo == 2:
-            
-    #         return 1.33
-        
-    #     elif self.grupo == 3:
-            
-    #         return 3.6
-
-    # def potencia_termica(self):
-        
-    #     Zcn = self.carga.impedancia_carga()
-    #     K = self.constante_K_termica()
-    #     Vs = self.tensao_secundaria()
-    #     Pth = 1.21 * K * (Vs ** 2) / (Zcn)
-
-    #     return Pth
