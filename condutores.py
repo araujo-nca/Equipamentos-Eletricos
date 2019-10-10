@@ -7,7 +7,7 @@ class Condutor():
     """Parâmetros: 
             material_isolante : string
 
-                Uma string que informa o tipo do material isolante: XLPE, EPR.
+                Uma string que informa o tipo do material isolante: XLPE, EPR, PVC.
 
             tipo_condutor : string
             
