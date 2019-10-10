@@ -3,6 +3,7 @@ from PIL import Image
  
 class TP():
     """Parâmetros: 
+
             tensao_primaria_nominal : número
                 Tensão nominal no primário do transformador [V].
 
@@ -28,6 +29,7 @@ class TP():
 
     def RTPr(self, tensao_primaria_aplicada = None, RTPn = None, erro_relacao_transformacao = None, FCRp = None):
         """Calcula a relação de transformação de potencial real [adimensional].
+
             A equação utilizada depende de quais parâmetros de entrada serão introduzidos.
         
             Parâmetros:
@@ -257,3 +259,17 @@ class TP():
         gamma_ct = angulo_fase + (3.438 * Ic * 2 * Lc) / tensao_secundario * (Rc * np.sin(theta_carga) + Xc * FP) / 1000
 
         return gamma_ct
+
+    def angulo_fase(self, FCTp, FCRp):
+        """Calcula a defasagem entre a tensão vetorial primária e a tensão vetorial secundária ['].
+        
+            Parâmetros:
+                FCTp : número
+                    Fator de correção de transformação percentual [adimensional].
+                    
+                FCRp : número
+                    Fator de correção de relação percentual [%]."""
+
+        gamma = 26 * (FCTp - FCRp)
+
+        return gamma
