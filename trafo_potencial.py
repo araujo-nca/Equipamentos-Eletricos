@@ -13,19 +13,20 @@ class TP():
         
         self.tensao_medida_secundario = tensao_medida_secundario
         self.tensao_primaria_nominal = tensao_primaria_nominal
+        # Tensão nominal secundária de 115 V
         self.tensao_nominal_secundario = 115
         self.RTPn = None
 
         if self.tensao_medida_secundario:
 
-            # Calcula o parâmetro RTP (Relação de transformaçãoo de potencial nominal)
+            # Calcula a relação de transformaçãoo de potencial nominal
             self.RTPn = self.tensao_primaria_nominal / self.tensao_nominal_secundario
 
             # Calcula a tensão primária não corrigida do transformador
             self.tensao_primario_nao_corrigida = self.RTPn * tensao_medida_secundario
 
 
-    def RTPr(self, tensao_primaria_aplicada = None, RTPn = None, erro_fator_correcao_de_relacao = None, FCRp = None):
+    def RTPr(self, tensao_primaria_aplicada = None, RTPn = None, erro_relacao_transformacao = None, FCRp = None):
         """Calcula a relação de transformação de potencial real [adimensional].
             A equação utilizada depende de quais parâmetros de entrada serão introduzidos.
         
@@ -36,21 +37,24 @@ class TP():
                 RTPn : número
                     Relação de transformação de potencial nominal [adimensional].
                     
-                erro_fator_correcao_de_relacao : número
-                    Erro de relação transformação ('epsilon p') [%].
+                erro_relacao_transformacao : número
+                    Erro de relação de transformação ('epsilon p') [%].
                     
                 FCRp : número
                     Fator de correção de relação percentual [%]."""
 
         if tensao_primaria_aplicada and self.tensao_medida_secundario:
-            # Calcula o parâmetro RTPr (Relação de transformação de potencial real)
+            # Parâmetros dados: tensao_primaria_aplicada e tensao_medida_secundario
             RTPr = tensao_primaria_aplicada / self.tensao_medida_secundario
-        elif RTPn and erro_fator_correcao_de_relacao:
-            RTPr = RTPn * (100 - erro_fator_correcao_de_relacao) / 100
+        elif RTPn and erro_relacao_transformacao:
+            # Parâmetros dados: RTPn e erro_relacao_transformacao
+            RTPr = RTPn * (100 - erro_relacao_transformacao) / 100
         elif RTPn and FCRp:
+            # Parâmetros dados: RTPn e FCRp
             RTPr = RTPn * FCRp / 100
         else:
-            print("Parametro nao identificado.")
+            # Quando nenhuma das condições são satisfeitas
+            print("RTPr – Parametro nao identificado.")
 
         return RTPr
 
@@ -66,22 +70,19 @@ class TP():
                     Relação de transformação de potencial nominal [adimensional]."""
 
         if self.RTPn:
-            # Calcula o fator de correção de relação real
             FCRr = RTPr / self.RTPn
         elif RTPn:
             FCRr = RTPr / RTPn
         else:
             print("RTPn nao identificado.")
 
-        # Calcula o fator de correção de relação percentual
         FCRp = FCRr * 100
 
         # Retorna duas saídas, FCP real e percentual
         return FCRr, FCRp
 
-    def erro_fator_correcao_de_relacao(self, FCRp_ou_TensaoPrimarioAplicada):
+    def erro_relacao_transformacao(self, FCRp_ou_TensaoPrimarioAplicada):
         """Calcula o erro de relação de transformação [%].
-            É necessário chamar dois valores de saída para obtenção de ambos.
 
             Parâmetros:
                 FCRp_ou_TensaoPrimarioAplicada : número
@@ -103,7 +104,7 @@ class TP():
         
             Parâmetros:
                 Ep : número
-                    Erro de relação transformação ('epsilon p') [%]."""
+                    Erro de relação de transformação ('epsilon p') [%]."""
 
         # Variável que recebe a tensão no primário corrigida (valor real)
         v_primario_real = self.tensao_primario_nao_corrigida - (self.tensao_primario_nao_corrigida * Ep / 100)
@@ -164,7 +165,6 @@ class TP():
                 tensao_secundario : número
                     Tensão secundária do TP [V]."""
 
-        #Calcula a corrente na carga
         Ic = potencia_carga * FP_carga / tensao_secundario
         
         return Ic
@@ -182,13 +182,12 @@ class TP():
                 comprimento_condutor : número
                     Distância entre o TP e a carga [m]."""
 
-        #Variável que calcula a queda de tensão no circuito
         delta_v_circuito = corrente_carga * resistencia_condutor * (2 * comprimento_condutor) / 1000
 
         return  delta_v_circuito
 
     def fator_correcao_relacao_carga_total_secundaria(self, FCRp, tensao_secundario, FP_carga, corrente_carga, comprimento_condutor, resistencia_condutor, reatancia_condutor):
-        """Calcula fator de correção de relação compreendendo a carga e os condutores do circuito secundário [adimensional].
+        """Calcula o fator de correção de relação compreendendo a carga e os condutores do circuito secundário [adimensional].
         
             Parâmetros:
                 FCRp : número
@@ -219,7 +218,6 @@ class TP():
         FP = FP_carga
         theta_carga = np.arccos(FP)
 
-        #Fator de correção de relação de carga secundária
         FCRct = FCRp / 100 + (Ic * 2 * Lc) / tensao_secundario * (Rc * FP + Xc * np.sin(theta_carga)) / 1000
         
         return FCRct
@@ -256,7 +254,6 @@ class TP():
         FP = FP_carga
         theta_carga = np.arccos(FP)
 
-        #Calcula o desvio angular total
         gamma_ct = angulo_fase + (3.438 * Ic * 2 * Lc) / tensao_secundario * (Rc * np.sin(theta_carga) + Xc * FP) / 1000
 
         return gamma_ct
