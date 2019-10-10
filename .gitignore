@@ -2,5 +2,4 @@
 *.json
 teste_tc.py
 *pyc
-TESTE_trafo_potencial.py
-teste_imagem.py
+TESTE_trasformador_de_potencial.py
