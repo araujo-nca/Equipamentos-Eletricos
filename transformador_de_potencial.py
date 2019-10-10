@@ -5,9 +5,11 @@ class TP():
     """Parâmetros: 
 
             tensao_primaria_nominal : número
+
                 Tensão nominal no primário do transformador [V].
 
             tensao_medida_secundario : número (opcional)
+
                 Tensão medida no secundário do transformador [V]."""
 
     def __init__(self, tensao_primaria_nominal, tensao_medida_secundario = None):
@@ -33,16 +35,21 @@ class TP():
             A equação utilizada depende de quais parâmetros de entrada serão introduzidos.
         
             Parâmetros:
+
                 tensao_primaria_aplicada : número
+
                     Tensão aplicada no primário do transformador de potencial [V].
                     
                 RTPn : número
+
                     Relação de transformação de potencial nominal [adimensional].
                     
                 erro_relacao_transformacao : número
+
                     Erro de relação de transformação ('epsilon p') [%].
                     
                 FCRp : número
+
                     Fator de correção de relação percentual [%]."""
 
         if tensao_primaria_aplicada and self.tensao_medida_secundario:
@@ -62,13 +69,17 @@ class TP():
 
     def FCRr_e_FCRp(self, RTPr, RTPn = None):
         """Calcula o fator de correção de relação real e percentual [adimensional, %].
+
             É necessário chamar dois valores de saída para obtenção de ambos.
 
             Parâmetros:
+
                 RTPr : número
+
                     Relação de transformação de potencial real [adimensional].
                     
                 RTPn : número
+
                     Relação de transformação de potencial nominal [adimensional]."""
 
         if self.RTPn:
@@ -87,7 +98,9 @@ class TP():
         """Calcula o erro de relação de transformação [%].
 
             Parâmetros:
+
                 FCRp_ou_TensaoPrimarioAplicada : número
+
                     Fator de correção de relação percentual OU tensão aplicada no primário do TP [%, V]."""
 
         if FCRp_ou_TensaoPrimarioAplicada > 200:
@@ -105,7 +118,9 @@ class TP():
         """Calcula o valor real da tensão primária [V].
         
             Parâmetros:
+
                 Ep : número
+
                     Erro de relação de transformação ('epsilon p') [%]."""
 
         # Variável que recebe a tensão no primário corrigida (valor real)
@@ -117,10 +132,13 @@ class TP():
         """Calcula a diferença entre a tensão primária aplicada e a real [V].
         
             Parâmetros:
+
                 tensao_primaria_aplicada : número
+
                     Tensão aplicada no primário do transformador de potencial [V].
                     
                 RTPn : número
+
                     Relação de transformação de potencial nominal [adimensional]."""
 
         v_primario_real = self.tensao_medida_secundario * RTPn
@@ -132,10 +150,13 @@ class TP():
         """Gráfico para definição da classe de exatidão do transformador de potencial.
         
             Parâmetros para visualização:
+
                 angulo_fase : número
+
                     Defasagem entre a tensão vetorial primária e a tensão vetorial secundária ['].
                 
                 FCRp : número
+
                     Fator de correção de relação percentual [%]."""
 
         img_classe_exatidao = Image.open('figura_classedeexatidao.png')
@@ -147,7 +168,9 @@ class TP():
         """Calcula a tensão secundária do TP [V].
         
             Parâmetros:
+
                 RTPn : número
+
                     Relação de transformação de potencial nominal [adimensional]."""
         
         v_secundario = self.tensao_primaria_nominal / RTPn
@@ -158,13 +181,17 @@ class TP():
         """Calcula a corrente que circula na carga [A].
         
             Parâmetros:
+
                 potencia_carga : número
+
                     Potência aparente consumida pela carga [VA].
                     
                 FP_carga : número
+
                     Fator de potência da carga [adimensional].
                     
                 tensao_secundario : número
+
                     Tensão secundária do TP [V]."""
 
         Ic = potencia_carga * FP_carga / tensao_secundario
@@ -175,13 +202,17 @@ class TP():
         """Calcula a queda de tensão no circuito da carga [V].
         
             Parâmetros:
+
                 corrente_carga : número
+
                     Corrente que circula na carga [A].
                     
                 resistencia_condutor : número
+
                     Resistência do condutor do circuito secundário [mΩ/m].
                     
                 comprimento_condutor : número
+
                     Distância entre o TP e a carga [m]."""
 
         delta_v_circuito = corrente_carga * resistencia_condutor * (2 * comprimento_condutor) / 1000
@@ -192,25 +223,33 @@ class TP():
         """Calcula o fator de correção de relação compreendendo a carga e os condutores do circuito secundário [adimensional].
         
             Parâmetros:
+
                 FCRp : número
+
                     Fator de correção de relação percentual [%].
                     
                 tensao_secundario : número
+
                     Tensão secundária do TP [V].
                     
                 FP_carga : número
+
                     Fator de potência da carga [adimensional].
                     
                 corrente_carga : número
+
                     Corrente que circula na carga [A].
                     
                 comprimento_condutor : número
+
                     Distância entre o TP e a carga [m].
                     
                 resistencia_condutor : número
+
                     Resistência do condutor do circuito secundário [mΩ/m].
                 
                 reatancia_condutor : número
+
                     Reatância do condutor do circuito secundário [mΩ/m]."""
 
         Ic = corrente_carga
@@ -228,25 +267,33 @@ class TP():
         """Calcula o ângulo de fase compreendendo a carga e os condutores do circuito secundário ['].
         
             Parâmetros:
+
                 angulo_fase : número
+
                     Defasagem entre a tensão vetorial primária e a tensão vetorial secundária ['].
                     
                 tensao_secundario : número
+
                     Tensão secundária do TP [V].
                     
                 FP_carga : número
+
                     Fator de potência da carga [adimensional].
                     
                 corrente_carga : número
+
                     Corrente que circula na carga [A].
                     
                 comprimento_condutor : número
+
                     Distância entre o TP e a carga [m].
                     
                 resistencia_condutor : número
+
                     Resistência do condutor do circuito secundário [mΩ/m].
                 
                 reatancia_condutor : número
+
                     Reatância do condutor do circuito secundário [mΩ/m]."""
         
         Ic = corrente_carga
@@ -264,10 +311,13 @@ class TP():
         """Calcula a defasagem entre a tensão vetorial primária e a tensão vetorial secundária ['].
         
             Parâmetros:
+
                 FCTp : número
+
                     Fator de correção de transformação percentual [adimensional].
                     
                 FCRp : número
+                
                     Fator de correção de relação percentual [%]."""
 
         gamma = 26 * (FCTp - FCRp)
