@@ -7,7 +7,7 @@ class Condutor():
     """Parâmetros: 
             material_isolante : string
 
-                Uma string que informa o tipo do material isolante: XLPE, EPR.
+                Uma string que informa o tipo do material isolante: XLPE, EPR, PVC.
 
             tipo_condutor : string
             
@@ -17,7 +17,7 @@ class Condutor():
 
             secao : número:
                 
-                seção do condutor 
+                seção do condutor [mm²]
             
             nivel de tensao: número
 
@@ -54,7 +54,8 @@ class Condutor():
         """ Calcula o gradiente de potencial a que fica submetido um vazio ou uma impureza qualquer no interior da isolação [kV/mm]
             Calcula o gradiente de potencial sem uma bolha de  impureza no interior da isolação [kV/mm]
             Calcula o gradiente de potencial máximo [kV/mm]
-            Calcula o gradiente de potencial mínimo [kV/mm].
+            Calcula o gradiente de potencial mínimo [kV/mm]
+            Calcula o gradiente de potencial médio [kV/mm].
         
             Parâmetros:
                 material_impureza : string
@@ -540,7 +541,7 @@ class Condutor():
         # Variavel que armazena o coeficiente de temperatura
         a20 = self.coeficiente_temperatura()
         # Variavel que armazena a secao do condutor
-        S = 300
+        S = self.secao
         # Variável que recebe a resistencia em corrente continua
         Rcc = self.resistencia_cc(K1, K2, K3, p20, a20, Tc, S)
         # Variável que recebe a componente de correção do efeito peculiar
@@ -617,7 +618,7 @@ class Condutor():
         return Zp
 
     def impedancia_positiva_aterrada_pontos(self, Tc, Tb, K4, Ebi, Ebe, Ebm, Corrente_condutor, comprimento_linha, Configuracao_cabos, Distancia=None, Distancia_1=None, Distancia_2=None, Distancia_3=None):
-        """Calcula a impedância de sequência positiva para vários pontos de aterramento [mΩ/m]
+        """ Calcula a impedância de sequência positiva para vários pontos de aterramento [mΩ/m]
             Calcula a tensão entre a blindagem e a terra [mV/m]
             Calcula a corrent circulante dentro da blindagem [A]
             Calcula as perdas na linha por efeito joule [W].
@@ -1048,4 +1049,4 @@ class Condutor():
 
         return Z0
 
-    print(tab421)
+ 
